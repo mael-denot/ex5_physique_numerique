@@ -4,7 +4,7 @@
 #include <iomanip>        // input output manipulators
 #include <valarray>       // valarray functions
 #include "ConfigFile.h" // Il contient les methodes pour lire inputs et ecrire outputs 
-#include <boost/random.hpp>
+//#include <boost/random.hpp>
 using namespace std; // ouvrir un namespace avec la librerie c++ de base
 
 
