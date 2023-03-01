@@ -96,7 +96,7 @@ protected:
 
   valarray<double> fun_moments(const valarray<double> &v){
      valarray<double> moments = valarray<double>(2); 
-     // TODO: compute first and second order moment
+     // compute first and second order moment
      // moyenne de v et moyenne de v^2
     moments[0] = v.sum()/v.size();
     valarray<double> v_squared=v*v;
@@ -185,10 +185,16 @@ public:
     v = initialization();
     
     //TODO: time step loop
-    
-       //TODO: particle loop: evolve particles velocity
-    
-       //TODO: use printOut to write the output
+
+
+
+      while (t < tfin){
+          // particle loop: evolve particles velocity
+          v += dt * acceleration(v) + random_deplacement()*sqrt(2*D*dt);
+          // use printOut to write the output
+          printOut(false);
+      }
+
 
     //suggestion: write here the algorithm, DO NOT create a function step() or there can be problems with 
     //the boost library for random number generation
