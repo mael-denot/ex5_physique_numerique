@@ -72,9 +72,24 @@ protected:
 
   valarray<double> binning_fun(const valarray<double> &v){
      valarray<double> bins_fun = valarray<double>(N_bins); 
-     // TODO: binning of the particle to compute the distribution function
+     // binning of the particle to compute the distribution function
      // histogramme de la fonction de distribution
      // bins_fun[i] devrait être égal au nombre de particules dans le bin numéro i
+    double box_size = (vhb - vlb)/N_bins; 
+    int a(0);
+
+     for (auto speed : v) {
+      a = v/box_size;
+      if (a>vhb) {++bins_fun[N_bins - 1];}
+      else if (a<vlb)
+      {
+        ++bins_fun[0];
+      }
+      else {
+        ++bins_fun[a];
+      }
+     }
+
      return bins_fun;
   }
 
