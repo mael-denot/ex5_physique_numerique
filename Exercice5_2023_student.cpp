@@ -4,7 +4,7 @@
 #include <iomanip>        // input output manipulators
 #include <valarray>       // valarray functions
 #include "ConfigFile.h" // Il contient les methodes pour lire inputs et ecrire outputs 
-//#include <boost/random.hpp>
+#include <boost/random.hpp>
 using namespace std; // ouvrir un namespace avec la librerie c++ de base
 
 
@@ -83,10 +83,13 @@ protected:
      valarray<double> moments = valarray<double>(2); 
      // TODO: compute first and second order moment
      // moyenne de v et moyenne de v^2
+    moments[0] = v.sum()/v.size();
+    valarray<double> v_squared=v*v;
+    moments[1] = v_squared.sum()/v_squared.size();
      return moments;
   }
 
-  valarray<double> inizialization(){
+  valarray<double> initialization(){
      valarray<double> vel = valarray<double>(N_part);
      boost::mt19937 rng;
      if (initial_distrib == "D"){
@@ -164,7 +167,7 @@ public:
     boost::variate_generator<boost::mt19937&, boost::normal_distribution<> > random_deplacement(rng,displace_gauss);
 
     //initialize particles velocity according to a given distribution function
-    v = initialisation();
+    v = initialization();
     
     //TODO: time step loop
     
