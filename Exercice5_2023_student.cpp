@@ -111,7 +111,17 @@ protected:
 	cout << "Delta distribution"<<endl;
 	// TODO: initialize the initial particle velocities according to a double Dirac distribution
 	// f = 1/2 (\delta(v-vg_D) + \delta(v-vd_D))
-     }
+     }  for(int ip = 0; ip < N_part/2; ++ip){
+
+        vel[ip] = vg_D;
+
+        }
+
+      for(int ip = N_part/2; ip < N_part; ++ip){
+
+        vel[ip] = vd_D;
+
+      }
      else{
 	cout << "Gaussian distribution"<<endl;
         boost::normal_distribution<> initial_distribution(v0,sigma0);
