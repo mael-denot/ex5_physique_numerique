@@ -12,7 +12,7 @@ using namespace std; // ouvrir un namespace avec la librerie c++ de base
 class Exercice7
 {
 
-private:
+  private:
   // definition des constantes
   const double pi=3.1415926535897932384626433832795028841971e0;
   // definition des variables
@@ -60,7 +60,7 @@ private:
     }
   }
 
-protected:
+  protected:
   double t;
   double dt;
   valarray<double> v ;
@@ -79,14 +79,20 @@ protected:
     int a(0);
 
      for (auto speed : v) {
-      a = v/box_size;
-      if (a>vhb) {++bins_fun[N_bins - 1];}
+      a = speed/box_size;
+      if (a>vhb) 
+      {
+        ++bins_fun[N_bins - 1];
+        cout << "max\n";
+      }
       else if (a<vlb)
       {
         ++bins_fun[0];
+        cout << "min\n";
       }
       else {
         ++bins_fun[a];
+        cout << "dans la " << a <<"e boite\n";
       }
      }
 
@@ -105,43 +111,44 @@ protected:
   }
 
   valarray<double> initialization(){
-     valarray<double> vel = valarray<double>(N_part);
-     boost::mt19937 rng;
-     if (initial_distrib == "D"){
-	cout << "Delta distribution"<<endl;
-	// TODO: initialize the initial particle velocities according to a double Dirac distribution
-	// f = 1/2 (\delta(v-vg_D) + \delta(v-vd_D))
-     }  for(int ip = 0; ip < N_part/2; ++ip){
+    valarray<double> vel = valarray<double>(N_part);
+    boost::mt19937 rng;
+    if (initial_distrib == "D"){
+    cout << "Delta distribution"<<endl;
+      // TODO: initialize the initial particle velocities according to a double Dirac distribution
+      // f = 1/2 (\delta(v-vg_D) + \delta(v-vd_D))
+      for(int ip = 0; ip < N_part/2; ++ip){
 
-        vel[ip] = vg_D;
-
-        }
-
-      for(int ip = N_part/2; ip < N_part; ++ip){
-
-        vel[ip] = vd_D;
+      vel[ip] = vg_D;
 
       }
-     else{
-	cout << "Gaussian distribution"<<endl;
-        boost::normal_distribution<> initial_distribution(v0,sigma0);
-        boost::variate_generator<boost::mt19937&, boost::normal_distribution<> > initial_velocities_generator(rng,initial_distribution);
-	// Uncomment the following two lines (and comment the two lines above) to use a uniform sampling between vg_D and vd_D
-        //boost::uniform_int<> initial_distribution(vg_D,vd_D);
-	//boost::variate_generator<boost::mt19937&, boost::uniform_int<> > initial_velocities_generator(rng,initial_distribution);
-        for(int ip = 0; ip < N_part; ++ip){
-          vel[ip] = initial_velocities_generator();
-	}	
+
+    for(int ip = N_part/2; ip < N_part; ++ip){
+
+      vel[ip] = vd_D;
+
     }
-     return vel;
-   }
+    }
+    else{
+    cout << "Gaussian distribution"<<endl;
+      boost::normal_distribution<> initial_distribution(v0,sigma0);
+      boost::variate_generator<boost::mt19937&, boost::normal_distribution<> > initial_velocities_generator(rng,initial_distribution);
+      // Uncomment the following two lines (and comment the two lines above) to use a uniform sampling between vg_D and vd_D
+      //boost::uniform_int<> initial_distribution(vg_D,vd_D);
+      //boost::variate_generator<boost::mt19937&, boost::uniform_int<> > initial_velocities_generator(rng,initial_distribution);
+      for(int ip = 0; ip < N_part; ++ip){
+        vel[ip] = initial_velocities_generator();
+      }	  
+    }
+    return vel;
+  }
 
 
-public:
+  public:
 
   Exercice7(int argc, char* argv[])
   {
-    string inputPath("configuration.in"); // Fichier d'input par defaut
+    string inputPath("configuration.in.example"); // Fichier d'input par defaut
     if(argc>1) // Fichier d'input specifie par l'utilisateur ("./Exercice7 config_perso.in")
       inputPath = argv[1];
 
@@ -193,16 +200,26 @@ public:
 
     //initialize particles velocity according to a given distribution function
     v = initialization();
-    
+
+
     //TODO: time step loop
 
-
+    int n(0);
 
       while (t < tfin){
           // particle loop: evolve particles velocity
-          v += dt * acceleration(v) + random_deplacement()*sqrt(2*D*dt);
+          for (auto speed: v){
+          speed += dt * acceleration(speed) + random_deplacement()*sqrt(2*D*dt);
+          }
+          // ++n;
+          // if (n%501 == 0) {cout << "speed is " << speed << endl;}
+          // }
+          // binning_fun(v);
           // use printOut to write the output
           printOut(false);
+          t += dt;
+          
+      
       }
 
 
