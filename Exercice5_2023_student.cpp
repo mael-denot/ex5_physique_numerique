@@ -75,24 +75,27 @@ class Exercice7
      // binning of the particle to compute the distribution function
      // histogramme de la fonction de distribution
      // bins_fun[i] devrait être égal au nombre de particules dans le bin numéro i
-    double box_size = (vhb - vlb)/N_bins; 
-    int a(0);
+    double box_size = (vhb - vlb)/N_bins;
+
+    size_t a(0);
+
+    int n(0);
 
      for (auto speed : v) {
-      a = speed/box_size;
-      if (a>vhb) 
+      a = ceil((speed-vlb)/box_size-1);
+      if (a>N_bins)
       {
         ++bins_fun[N_bins - 1];
-        cout << "max\n";
+        //cout << "max\n";
       }
-      else if (a<vlb)
+      else if (a<0)
       {
         ++bins_fun[0];
-        cout << "min\n";
+        //cout << "min\n";
       }
       else {
         ++bins_fun[a];
-        cout << "dans la " << a <<"e boite\n";
+        //cout << "dans la " << a <<"e boite\n";
       }
      }
 
@@ -110,10 +113,12 @@ class Exercice7
      return moments;
   }
 
+
+
   valarray<double> initialization(){
     valarray<double> vel = valarray<double>(N_part);
     boost::mt19937 rng;
-    if (initial_distrib == "D"){
+    if (initial_distrib == "D"){   
     cout << "Delta distribution"<<endl;
       // TODO: initialize the initial particle velocities according to a double Dirac distribution
       // f = 1/2 (\delta(v-vg_D) + \delta(v-vd_D))
@@ -208,18 +213,17 @@ class Exercice7
 
       while (t < tfin){
           // particle loop: evolve particles velocity
-          for (auto speed: v){
-          speed += dt * acceleration(speed) + random_deplacement()*sqrt(2*D*dt);
+          for (auto& speed: v) {
+              speed += dt * acceleration(speed) + random_deplacement() * sqrt(2 * D * dt);
+
+//              ++n;
+//              if (n % 201 == 0) { cout << "speed is " << speed << "; "; }
           }
-          // ++n;
-          // if (n%501 == 0) {cout << "speed is " << speed << endl;}
-          // }
           // binning_fun(v);
           // use printOut to write the output
           printOut(false);
           t += dt;
-          
-      
+          cout << t << '\n';
       }
 
 
