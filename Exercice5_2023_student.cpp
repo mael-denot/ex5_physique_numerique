@@ -77,15 +77,20 @@ class Exercice7
      // bins_fun[i] devrait être égal au nombre de particules dans le bin numéro i
     double box_size = (vhb - vlb)/N_bins;
 
-    size_t a(0);
+    int a(0);
 
     int n(0);
 
      for (auto speed : v) {
-      a = ceil((speed-vlb)/box_size-1);
+      a = ceil(((speed-vlb)/box_size)-1);
+      if ((n+1)%500==0)
+      {
+        cout << "speed = " << speed << endl;
+        cout << "a = " << a << endl;
+      }
       if (a>N_bins)
       {
-        ++bins_fun[N_bins - 1];
+        ++bins_fun[N_part-1];
         //cout << "max\n";
       }
       else if (a<0)
@@ -118,23 +123,23 @@ class Exercice7
   valarray<double> initialization(){
     valarray<double> vel = valarray<double>(N_part);
     boost::mt19937 rng;
-    if (initial_distrib == "D"){   
-    cout << "Delta distribution"<<endl;
+    bool known_distribution = false;
+    if (initial_distrib == "D"|| initial_distrib == "Dirac"){
+      cout << "Delta distribution"<<endl;
       // TODO: initialize the initial particle velocities according to a double Dirac distribution
       // f = 1/2 (\delta(v-vg_D) + \delta(v-vd_D))
       for(int ip = 0; ip < N_part/2; ++ip){
-
-      vel[ip] = vg_D;
-
+        vel[ip] = vg_D;
       }
-
-    for(int ip = N_part/2; ip < N_part; ++ip){
-
-      vel[ip] = vd_D;
-
+      cout << " half done,";
+      for(int ip = N_part/2; ip < N_part; ++ip){
+        vel[ip] = vd_D;
+      }
+      cout << " done"<<endl;
+      known_distribution = true;
     }
-    }
-    else{
+
+    if (initial_distrib == "G" || initial_distrib == "Gaussian"){
     cout << "Gaussian distribution"<<endl;
       boost::normal_distribution<> initial_distribution(v0,sigma0);
       boost::variate_generator<boost::mt19937&, boost::normal_distribution<> > initial_velocities_generator(rng,initial_distribution);
@@ -144,7 +149,37 @@ class Exercice7
       for(int ip = 0; ip < N_part; ++ip){
         vel[ip] = initial_velocities_generator();
       }	  
+      known_distribution = true;
     }
+
+    if (initial_distrib == "U" || initial_distrib == "Uniform"){
+    cout << "Uniform distribution"<<endl;
+      boost::uniform_int<> initial_distribution(vg_D,vd_D);
+      boost::variate_generator<boost::mt19937&, boost::uniform_int<> > initial_velocities_generator(rng,initial_distribution);
+      for(int ip = 0; ip < N_part; ++ip){
+        vel[ip] = initial_velocities_generator();
+      }	  
+      known_distribution = true;
+    }
+
+    if(initial_distrib == "C" || initial_distrib == "Cosinus"){
+    cout << "Cosinus distribution"<<endl;
+      boost::uniform_int<> initial_distribution(vg_D,vd_D);
+      boost::variate_generator<boost::mt19937&, boost::uniform_int<> > initial_velocities_generator(rng,initial_distribution);
+      for(int ip = 0; ip < N_part; ++ip){
+        vel[ip] = initial_velocities_generator();
+      }	  
+      known_distribution = true;
+    }
+
+    if (!known_distribution) {
+      cout << "Unknown initial distribution" << endl;
+      exit(1);
+    }
+    for (auto speed : vel) {
+      cout << speed << "; ";
+    }
+    cout << endl;
     return vel;
   }
 
@@ -199,12 +234,12 @@ class Exercice7
     t = 0.; // initialiser le temps
     last = 0; // initialise le parametre d'ecriture
     boost::mt19937 rng; // initialise le générateur de nombres pseudo-aléatoire
-    printOut(true); // ecrire premier pas de temps
     boost::normal_distribution<> displace_gauss(0.,1.); // définit une distribution normale
     boost::variate_generator<boost::mt19937&, boost::normal_distribution<> > random_deplacement(rng,displace_gauss);
 
     //initialize particles velocity according to a given distribution function
     v = initialization();
+    printOut(true); // ecrire premier pas de temps
 
 
     //TODO: time step loop
@@ -223,7 +258,7 @@ class Exercice7
           // use printOut to write the output
           printOut(false);
           t += dt;
-          cout << t << '\n';
+          cout << t << endl;
       }
 
 

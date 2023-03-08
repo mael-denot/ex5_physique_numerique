@@ -77,8 +77,8 @@ def initial_conditions(params):
 #print (initial_conditions(parameters))
 
 
-#convergence analysis of mean velocity for different value of N_part
-def mean_velocity_convergence(params):
+#evolution analysis of mean velocity for different value of N_part
+def mean_velocity_evolution(params):
     N_parts = np.logspace(1, 3.5, 50, base=10.0)
     errors = np.zeros((len(N_parts)))
     for i, N_part in enumerate(N_parts):
@@ -90,7 +90,7 @@ def mean_velocity_convergence(params):
     #plt.ion()
     plt.rcParams.update({'font.size': 15})
     plt.plot(N_parts, errors, label='Simulated')
-    plt.title("Convergence of mean velocity")
+    plt.title("evolution of mean velocity")
     plt.xlabel("N_part")
     plt.ylabel("Error")
     plt.hlines(0.0, 0, 3500, linestyles='dashed', colors='black')
@@ -98,10 +98,10 @@ def mean_velocity_convergence(params):
     plt.show()
 
 
-# mean_velocity_convergence(parameters)
+# mean_velocity_evolution(parameters)
 
-#convergence analysis of variance of velocity for different value of N_part
-def variance_velocity_convergence(params):
+#evolution analysis of variance of velocity for different value of N_part
+def variance_velocity_evolution(params):
 
 
     N_parts = np.logspace(1, 3, 50, base=10.0)
@@ -134,17 +134,17 @@ def variance_velocity_convergence(params):
     plt.plot(N_parts, errors1, linewidth=2, color='red', label='Simulated')
     plt.plot(N_parts, errors2,  linewidth=1, color='blue', label='Simulated')
     #plt.plot(N_parts, errors3, color='green', label='Simulated')
-    plt.title("Convergence of variance of velocity")
+    plt.title("evolution of variance of velocity")
     plt.xlabel("N_part")
     plt.ylabel("Error")
     plt.hlines(0.0, 0, 3500, linestyles='dashed', colors='black')
     plt.legend()
     plt.show()
 
-#variance_velocity_convergence(parameters)
+#variance_velocity_evolution(parameters)
 
-#simultaneous convergence analysis of mean velocity and variance of velocity for different value of N_partwith different scales
-def simultaneous_convergence(params):
+#simultaneous evolution analysis of mean velocity and variance of velocity for different value of N_partwith different scales
+def simultaneous_evolution(params):
     params['Initial_distrib'] = 'G'
     params['v0'] = 0.0
     params['sigma0'] = 0.1
@@ -168,7 +168,7 @@ def simultaneous_convergence(params):
     ax1.set_xlabel('N_part')
     ax1.set_ylabel('mean velocity', color=color)
     ax1.plot(N_parts, errors1, color=color)
-    ax1.plot(N_parts, (4.1/100.)*np.exp(-0.01*N_parts+0.003), color='black', linestyle='dashed')
+    #ax1.plot(N_parts, (4.1/100.)*np.exp(-0.01*N_parts+0.003), color='black', linestyle='dashed')
     ax1.tick_params(axis='y', labelcolor=color)
 
     ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
@@ -183,11 +183,19 @@ def simultaneous_convergence(params):
 
 
 
-#simultaneous_convergence(parameters)
+#simultaneous_evolution(parameters)
 
 # c)
 
+def analytical_mean(t):
+    return parameters['vc']+(parameters['v0']-parameters['vc'])*np.exp(-parameters['gamma']*t)
+
+def analytical_variance(t, D=parameters['D']):
+    print(t, D)
+    return parameters['D']/parameters['gamma']+(parameters['sigma0']**2-parameters['D']/parameters['gamma'])*np.exp(-2*parameters['gamma']*t)
+
 #update parameters
+parameters['Initial_distrib'] = 'G'
 parameters['vc'] = 2
 parameters['D'] = 0.3
 parameters['gamma'] = parameters['D']/2.5
@@ -204,6 +212,8 @@ def mean_velocity_variance_velocity(params):
     plt.figure()
     plt.rcParams.update({'font.size': 15})
     plt.plot(t, v_mean, label='Simulated')
+    #plot analytical solution
+    plt.plot(t, analytical_mean(t), linestyle='dotted', color='red',label='Analytical')
     plt.title("Mean velocity")
     plt.xlabel("time")
     plt.ylabel("mean velocity")
@@ -212,14 +222,196 @@ def mean_velocity_variance_velocity(params):
     plt.figure()
     plt.rcParams.update({'font.size': 15})
     plt.plot(t, v_variance, label='Simulated')
+    #plot analytical solution
+    plt.plot(t, analytical_variance(t), linestyle='dotted', color='red', label='Analytical')
     plt.title("Variance of velocity")
     plt.xlabel("time")
     plt.ylabel("variance of velocity")
     plt.legend()
     plt.show()
 
-mean_velocity_variance_velocity(parameters)
+#mean_velocity_variance_velocity(parameters)
+
+# run simulations for five values of N_part and plot mean velocity and variance of velocity at each time step and put them on the same plot
+def mean_velocity_variance_velocity_Npart(params):
+    #initialise a 5x2000 matrix to store the data
+    v_mean = np.zeros((5, 1001))
+    var_mean = np.zeros((5, 1001))
+    #do a loop over five different values of N_part and store the data in the matrix
+    for i, N_part in enumerate([20, 50, 100, 200, 500]):
+        params['N_part'] = N_part
+        simulationData = runSimulation("adMC", params)
+        v_mean[i,:] = simulationData[:,2]
+        var_mean[i,:] = simulationData[:,3]
+    
+    #plot the data
+    t= simulationData[:,0]
+    plt.figure()
+    plt.rcParams.update({'font.size': 15})
+    plt.plot(t, v_mean[0,:], label='N_part = 20')
+    plt.plot(t, v_mean[1,:], label='N_part = 50')
+    plt.plot(t, v_mean[2,:], label='N_part = 100')
+    plt.plot(t, v_mean[3,:], label='N_part = 200')
+    plt.plot(t, v_mean[4,:], label='N_part = 500')
+    plt.title("Mean velocity")
+    plt.xlabel("time")
+    plt.ylabel("mean velocity")
+    plt.legend()
+    plt.show()
+
+    plt.figure()
+    plt.rcParams.update({'font.size': 15})
+    plt.plot(t, var_mean[0,:], label='N_part = 20')
+    plt.plot(t, var_mean[1,:], label='N_part = 50')
+    plt.plot(t, var_mean[2,:], label='N_part = 100')
+    plt.plot(t, var_mean[3,:], label='N_part = 200')
+    plt.plot(t, var_mean[4,:], label='N_part = 500')
+    plt.title("Variance of velocity")
+    plt.xlabel("time")
+    plt.ylabel("variance of velocity")
+    plt.legend()
+    plt.show()
 
 
+
+#mean_velocity_variance_velocity_Npart(parameters)
+
+#evolution study of mean velocity at t=tfin for increasing nsteps values
+def mean_velocity_evolution(params):
+    params['Initial_distrib'] = 'G'
+    params['v0'] = 0.0
+    params['sigma0'] = 0.1
+    params['tfin'] = 60.0
+
+    #nsteps is a logarithmic scale going from 10 to 10000
+    nsteps = np.logspace(1, 4, 10)
+    errors = np.zeros((len(nsteps)))
+
+    #take the last element of the third column of the simulation data which is the mean velocity at tfin
+    for i, nstep in enumerate(nsteps):
+        params['nsteps'] = int(nstep)
+        simulationData = runSimulation("adMC", params)
+        errors[i] = np.absolute(simulationData[-1,2] - 0.0)
+
+    plt.figure()
+    plt.rcParams.update({'font.size': 15})
+    plt.plot(nsteps, errors, label='Simulated')
+    plt.title("evolution of mean velocity")
+    plt.xlabel("nsteps")
+    plt.ylabel("mean velocity")
+    plt.legend()
+    plt.show()
+
+#mean_velocity_evolution(parameters)
+
+# run mean_velocity_variance_velocity_Npart for different values of vc and sigma0
+
+# parameters['v0'] = 3.0
+# parameters['sigma0'] = 10.0
+#mean_velocity_variance_velocity(parameters)
+
+#evolution study of mean velocity at t=tfin for values of D from 0.01 to 1.0
+def mean_velocity_evolution_D(params):
+    params['Initial_distrib'] = 'G'
+    params['v0'] = 0.0
+    params['sigma0'] = 0.1
+    params['tfin'] = 60.0
+    params['vc'] = 0.0
+
+    #D is a logarithmic scale going from 0.01 to 1.0
+    D = np.logspace(-2, 0, 10)
+    errors = np.zeros((len(D)))
+
+    #take the last element of the third column of the simulation data which is the mean velocity at tfin
+    for i, d in enumerate(D):
+        params['D'] = d
+        params['gamma'] = params['D']/2.5
+        simulationData = runSimulation("adMC", params)
+        errors[i] = np.absolute(simulationData[-1,2] - 0.0)
+
+    plt.figure()
+    plt.rcParams.update({'font.size': 15})
+    plt.plot(D, errors, label='Simulated')
+    plt.title("Evolution of mean velocity")
+    plt.xlabel("D")
+    plt.ylabel("mean velocity")
+    plt.legend()
+    plt.show()
+
+#study of variance of velocity at tfin for values of D from 0.01 to 1.0
+def variance_velocity_evolution_D(params):
+    params['Initial_distrib'] = 'G'
+    params['v0'] = 0.0
+    params['sigma0'] = 0.1
+    params['tfin'] = 60.0
+    params['vc'] = 0.0
+
+    #D is a logarithmic scale going from 0.01 to 1.0
+    D = np.logspace(-2, 0, 20)
+    errors = np.zeros((len(D)))
+    theoretical = np.zeros((len(D)))
+
+    #take the last element of the third column of the simulation data which is the mean velocity at tfin
+    for i, d in enumerate(D):
+        params['D'] = d
+        #params['gamma'] = params['D']/2.5
+        simulationData = runSimulation("adMC", params)
+        errors[i] = np.absolute(simulationData[-1,3] - 0.0)
+        theoretical[i] = analytical_variance(params['tfin'], d)
+
+    plt.figure()
+    plt.rcParams.update({'font.size': 15})
+    plt.plot(D, errors, label='Simulated')
+    plt.plot(D, theoretical, label='Theoretical')
+    plt.title("Evolution of variance of velocity")
+    plt.xlabel("D")
+    plt.ylabel("variance of velocity")
+    plt.legend()
+    plt.show() 
+
+#variance_velocity_evolution_D(parameters)
+
+#plot the speed in a histogram
+def speed_histogram(params, rang=-1):
+    simulationData = runSimulation("adMC", params)
+    speed = simulationData[rang,4:]
+    
+    a = np.linspace(params['vlb'], params['vhb'], params['N_bins'])
+
+    #plot the histogram
+    plt.figure()
+    plt.rcParams.update({'font.size': 15})
+    plt.hist(a, params['N_bins'], weights=speed)
+    plt.title("Speed histogram")
+    plt.xlabel("speed")
+    plt.ylabel("frequency")
+    plt.show()
+
+#parameters['initial_distrib'] = 'D'
+parameters['initial_distrib'] = input("initial distribution (D, G, U, C):")
+parameters['v0'] = 0.0
+parameters['sigma0'] = 3.0
+parameters['vd_D'] = 4.0
+parameters['vg_D'] = -4.0
+parameters['tfin'] = 1.0
+parameters['sampling'] = 2
+parameters['nsteps'] = 100
+speed_histogram(parameters, 0)
+
+#plot the particles in the 14th bin
+def particles_in_bin(params, bin):
+    simulationData = runSimulation("adMC", params)
+    particles = simulationData[:,4+bin]
+    t = simulationData[:,0]
+    
+    plt.figure()
+    plt.rcParams.update({'font.size': 15})
+    plt.plot(t, particles)
+    plt.title("Particles in bin")
+    plt.xlabel("time")
+    plt.ylabel("number of particles")
+    plt.show()
+
+# particles_in_bin(parameters, 14)
 
 print ("code finished")
